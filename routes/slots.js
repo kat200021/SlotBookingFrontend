@@ -105,6 +105,19 @@ const getWeekday = (dateString) => {
       }
 
       const booking = inserted[0];
+
+
+      router.post('/book-slot', async (req, res) => {
+        try {
+          const { name, date, slot, email } = req.body;
+          // Perform booking logic
+          const booking = await Booking.create({ name, date, slot, email });
+          res.json({ booking_id: booking.id });
+        } catch (error) {
+          console.error('Booking error:', error);
+          res.status(500).json({ message: 'Internal server error' });
+        }
+      });
   
       //return res.json({ message: 'Booking successful' });
       return res.json({
@@ -173,22 +186,5 @@ const getWeekday = (dateString) => {
     
         res.json({ message: 'Receipt info uploaded successfully' });
   });
-  
-
-// module.exports = router;
-
-
-
-// const express = require('express');
-// const router = express.Router();
-
-// Replace this with your actual logic
-router.get('/', (req, res) => {
-  res.json([
-    { id: 1, time: '10:00 AM', available: 3 },
-    { id: 2, time: '11:00 AM', available: 2 },
-    { id: 3, time: '12:00 PM', available: 0 }
-  ]);
-});
 
 module.exports = router;
