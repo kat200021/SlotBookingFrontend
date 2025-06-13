@@ -4,6 +4,7 @@ const supabase = require('../supabaseClient');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 const { v4: uuidv4 } = require('uuid');
+const nodemailer = require('nodemailer');
 
 const getWeekday = (dateString) => {
     const parts = dateString.split('-');
@@ -170,7 +171,33 @@ const getWeekday = (dateString) => {
         if (updateError) {
         return res.status(500).json({ error: updateError.message });
         }
-    
+
+        // Fetch user's email from the bookings table
+        const { data: booking, error: fetchError } = await supabase
+          .from('bookings')
+          .select('user_email')
+          .eq('id', booking_id)
+          .single();
+
+        if (fetchError || !booking) {
+          return res.status(500).json({ error: 'Failed to fetch user email.' });
+        }
+
+        const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+          }
+        });
+
+        await transporter.sendMail({
+          from: process.env.EMAIL_USER,
+          to: booking.user_email,
+          subject: 'Slot Booking Confirmation',
+          text: `Your booking has been confirmed for ${booking_id}. Thank you!`,
+        });
+
         res.json({ message: 'Receipt info uploaded successfully' });
   });
 
