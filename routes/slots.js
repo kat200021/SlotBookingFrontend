@@ -179,7 +179,7 @@ const getWeekday = (dateString) => {
           .eq('id', booking_id)
           .single();
 
-        if (fetchError || !booking) {
+        if (fetchError || !bookingData) {
           return res.status(500).json({ error: 'Failed to fetch user email.' });
         }
 
@@ -208,7 +208,11 @@ const getWeekday = (dateString) => {
           `,
         };
 
-        await transporter.sendMail(mailOptions);
+        try {
+          await transporter.sendMail(mailOptions);
+        } catch (emailErr) {
+          console.error('Email sending failed:', emailErr);
+        }
 
         res.json({ message: 'Receipt info uploaded successfully' });
   });
