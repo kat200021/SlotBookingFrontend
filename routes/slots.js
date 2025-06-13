@@ -175,7 +175,7 @@ const getWeekday = (dateString) => {
         // Fetch user's email from the bookings table
         const { data: booking, error: fetchError } = await supabase
           .from('bookings')
-          .select('user_email')
+          .select('user_email','person_name', 'date', 'time_slot')
           .eq('id', booking_id)
           .single();
 
@@ -195,7 +195,7 @@ const getWeekday = (dateString) => {
           from: process.env.EMAIL_USER,
           to: booking.user_email,
           subject: 'Slot Booking Confirmation',
-          text: `Your booking has been confirmed for ${booking_id}. Thank you!`,
+          text: `Your booking has been confirmed for ${user_email} on ${date} at ${time_slot}. Thank you!`,
         });
 
         res.json({ message: 'Receipt info uploaded successfully' });
