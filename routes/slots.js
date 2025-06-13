@@ -105,19 +105,6 @@ const getWeekday = (dateString) => {
       }
 
       const booking = inserted[0];
-
-
-      router.post('/book-slot', async (req, res) => {
-        try {
-          const { name, date, slot, email } = req.body;
-          // Perform booking logic
-          const booking = await Booking.create({ name, date, slot, email });
-          res.json({ booking_id: booking.id });
-        } catch (error) {
-          console.error('Booking error:', error);
-          res.status(500).json({ message: 'Internal server error' });
-        }
-      });
   
       //return res.json({ message: 'Booking successful' });
       return res.json({
