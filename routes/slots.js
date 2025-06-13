@@ -173,9 +173,9 @@ const getWeekday = (dateString) => {
         }
 
         // Fetch user's email from the bookings table
-        const { data: booking, error: fetchError } = await supabase
+        const { data: bookingData, error: fetchError } = await supabase
           .from('bookings')
-          .select('user_email','person_name', 'date', 'time_slot')
+          .select('user_email, person_name, date, time_slot')
           .eq('id', booking_id)
           .single();
 
@@ -190,13 +190,25 @@ const getWeekday = (dateString) => {
             pass: process.env.EMAIL_PASS
           }
         });
-
-        await transporter.sendMail({
+        
+        const mailOptions = {
           from: process.env.EMAIL_USER,
-          to: booking.user_email,
-          subject: 'Slot Booking Confirmation',
-          text: `Your booking has been confirmed for ${user_email} on ${date} at ${time_slot}. Thank you!`,
-        });
+          to: bookingData.user_email,
+          subject: 'Appointment Confirmation',
+          html: `
+            <h2>Booking Confirmed</h2>
+            <p>Dear User,</p>
+            <p>Your appointment has been confirmed with the following details:</p>
+            <ul>
+              <li><strong>Name:</strong> ${bookingData.person_name}</li>
+              <li><strong>Date:</strong> ${bookingData.date}</li>
+              <li><strong>Time Slot:</strong> ${bookingData.time_slot}</li>
+            </ul>
+            <p>Thank you for booking!</p>
+          `,
+        };
+
+        await transporter.sendMail(mailOptions);
 
         res.json({ message: 'Receipt info uploaded successfully' });
   });
