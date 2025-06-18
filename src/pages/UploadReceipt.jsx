@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { BASE_URL } from '../services/api';
-import { FileUp, Send, UploadCloud } from 'lucide-react';
+import { Send, UploadCloud } from 'lucide-react';
 
 const UploadReceipt = () => {
   const location = useLocation();
@@ -91,7 +91,6 @@ const UploadReceipt = () => {
           </div>
 
           {/* File Upload */}
-
           <div>
             <label className="block text-sm mb-2">Or Upload the Receipt Screenshot</label>
             <div className="flex items-center gap-4">

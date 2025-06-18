@@ -12,6 +12,7 @@ const Home = () => {
   const [occupations, setOccupations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [checkingAvailability, setCheckingAvailability] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,8 +36,10 @@ const Home = () => {
 
   const handleSearch = async () => {
     if (!date || !occupation) return;
-    
+
     setCheckingAvailability(true);
+    setHasSearched(true);
+    
     try {
       const res = await getAvailableSlots(date, occupation);
       setFilteredPeople(res.available_people || []);
@@ -169,7 +172,7 @@ const Home = () => {
           )}
 
           {/* No Results State */}
-          { !loading && filteredPeople.length === 0 && date && occupation && (
+          { !loading && !checkingAvailability &&hasSearched && filteredPeople.length === 0 && date && occupation && (
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getAvailableSlots } from '../services/api';
 import { motion } from 'framer-motion';
 import { BASE_URL } from '../services/api';
-import { Calendar, Clock, Mail } from 'lucide-react';
+import { Clock, Mail } from 'lucide-react';
 
 const Booking = () => {
   const [searchParams] = useSearchParams();
@@ -21,8 +21,6 @@ const Booking = () => {
   const [emailValid, setEmailValid] = useState(false);
   const [error, setError] = useState('');
   
-
-
 
   useEffect(() => {
     if (!name ||!date || !occupation) return;
@@ -81,14 +79,6 @@ const Booking = () => {
       setError('Something went wrong. Please try again.');
     }
   };
-  
-
-  // const handleContinue = () => {
-  //   if (!selectedSlot || !email) return;
-  //   navigate(
-  //     `/upload?name=${encodeURIComponent(name)}&date=${date}&time_slot=${encodeURIComponent(selectedSlot)}&email=${encodeURIComponent(email)}`
-  //   );
-  // };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -206,138 +196,3 @@ const Booking = () => {
 };
 
 export default Booking;
-
-
-
-
-
-
-
-// import { useEffect, useState } from 'react';
-// import { useLocation, useNavigate } from 'react-router-dom';
-// import { getAvailableSlots } from '../services/api';
-// import { motion } from 'framer-motion';
-// import { Clock, Mail } from 'lucide-react';
-
-// const Booking = () => {
-//   const location = useLocation();
-//   const navigate = useNavigate();
-//   const searchParams = new URLSearchParams(location.search);
-//   const name = searchParams.get('name');
-//   const date = searchParams.get('date');
-
-//   const [slots, setSlots] = useState([]);
-//   const [selectedSlot, setSelectedSlot] = useState('');
-//   const [email, setEmail] = useState('');
-//   const [error, setError] = useState('');
-
-//   useEffect(() => {
-//     if (name && date) {
-//       getAvailableSlots(name, date)
-//         .then((res) => {
-//           if (Array.isArray(res.available_slots)) {
-//             setSlots(res.available_slots);
-//           }
-//         })
-//         .catch((err) => console.error(err));
-//     }
-//   }, [name, date]);
-
-//   const handleContinue = async () => {
-//     setError('');
-
-//     if (!email || !selectedSlot) {
-//       setError('Please select a slot and enter your email.');
-//       return;
-//     }
-
-//     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-//     if (!emailRegex.test(email)) {
-//       setError('Please enter a valid email address.');
-//       return;
-//     }
-
-//     try {
-//       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/slots/book`, {
-//         method: 'POST',
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify({ person_name: name, date, time_slot: selectedSlot, user_email: email }),
-//       });
-
-//       const data = await res.json();
-
-//       if (!res.ok) {
-//         setError(data.error || 'Booking failed. Please try again.');
-//         return;
-//       }
-
-//       // Navigate to upload with booking info
-//       navigate(`/upload?booking_id=${data.booking_id}&name=${name}&date=${date}&slot=${selectedSlot}`);
-//     } catch (err) {
-//       setError('Something went wrong.');
-//     }
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-gray-900 text-white py-12 px-6">
-//       <div className="max-w-3xl mx-auto">
-//         <h1 className="text-4xl font-bold mb-8 text-center">Choose a Slot</h1>
-
-//         <div className="mb-6 text-center text-lg">
-//           Booking for <span className="font-semibold text-blue-400">{name}</span> on{' '}
-//           <span className="font-semibold text-blue-400">{date}</span>
-//         </div>
-
-//         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-10">
-//           {slots.map((slot) => (
-//             <motion.div
-//               key={slot}
-//               onClick={() => setSelectedSlot(slot)}
-//               className={`cursor-pointer p-4 rounded-xl border ${
-//                 selectedSlot === slot
-//                   ? 'bg-blue-600 text-white border-blue-400'
-//                   : 'bg-white/10 text-white hover:bg-white/20'
-//               } transition-all duration-200 text-center`}
-//               whileHover={{ scale: 1.05 }}
-//               whileTap={{ scale: 0.95 }}
-//             >
-//               <Clock className="w-5 h-5 mx-auto mb-2" />
-//               <div className="font-medium">{slot}</div>
-//             </motion.div>
-//           ))}
-//         </div>
-
-//         <div className="mb-6">
-//           <label className="block mb-2 text-lg font-medium">Your Email</label>
-//           <div className="relative">
-//             <Mail className="absolute left-3 top-3 text-white/50 w-5 h-5" />
-//             <input
-//               type="email"
-//               value={email}
-//               onChange={(e) => setEmail(e.target.value)}
-//               placeholder="example@email.com"
-//               className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-//             />
-//           </div>
-//         </div>
-
-//         {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
-
-//         <button
-//           onClick={handleContinue}
-//           className="w-full py-3 bg-blue-600 hover:bg-blue-700 rounded-xl font-semibold transition duration-300"
-//         >
-//           Continue
-//         </button>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Booking;
-
-
-
-
-
-
