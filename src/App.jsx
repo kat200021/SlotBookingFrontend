@@ -3,6 +3,7 @@ import Home from './pages/Home';
 import Booking from './pages/Booking';
 import UploadReceipt from './pages/UploadReceipt';
 import Success from './pages/Success';
+import Payment from './pages/Payment';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/booking" element={<Booking />} />
         <Route path="/upload" element={<UploadReceipt />} />
+        <Route path="/payment" element={<Payment />} />
         <Route path="/success" element={<Success />} />
       </Routes>
     </Router>

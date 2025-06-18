@@ -54,10 +54,8 @@ const UploadReceipt = () => {
       }
       if (!res.ok) throw new Error(data?.error || 'Failed to submit receipt');
 
-      // const data = await res.json();
-      // if (!res.ok) throw new Error(data.error || 'Failed to submit receipt');
-
-      navigate('/'); // or a success page
+      // On success, navigate to success page with booking details
+      navigate(`/success?booking_id=${booking_id}&name=${encodeURIComponent(name)}&date=${encodeURIComponent(date)}&slot=${encodeURIComponent(time_slot)}`);
     } catch (err) {
       setError('Submission failed: ' + err.message);
     } finally {

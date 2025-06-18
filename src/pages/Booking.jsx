@@ -11,6 +11,8 @@ const Booking = () => {
 
   const name = searchParams.get('name');
   const date = searchParams.get('date');
+  const occupation = searchParams.get('occupation');
+
 
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,19 +20,21 @@ const Booking = () => {
   const [email, setEmail] = useState('');
   const [emailValid, setEmailValid] = useState(false);
   const [error, setError] = useState('');
+  
 
 
 
   useEffect(() => {
-    if (!name || !date) return;
+    if (!name ||!date || !occupation) return;
 
-    getAvailableSlots(name, date)
+    getAvailableSlots(date, occupation, name)
       .then((data) => {
-        setSlots(data?.available_slots || []);
+        const person = data?.available_people?.[0];
+        setSlots(person?.available_slots || []);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [name, date]);
+  }, [name, date, occupation ]);
 
 
   const handleContinue = async () => {
@@ -66,9 +70,9 @@ const Booking = () => {
         return;
       }
   
-      // Booking succeeded — navigate to upload with booking_id
+      // Booking succeeded — navigate to payment with booking_id
       navigate(
-        `/upload?booking_id=${data.booking_id}&name=${encodeURIComponent(
+        `/payment?booking_id=${data.booking_id}&name=${encodeURIComponent(
           name
         )}&date=${encodeURIComponent(date)}&slot=${encodeURIComponent(selectedSlot)}`
       );

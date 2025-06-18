@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAllPeople, getAvailableSlots } from '../services/api';
+import { getAllPeople, getAvailableSlots, getOccupations } from '../services/api';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, User, ArrowRight, CheckCircle } from 'lucide-react';
 
@@ -8,43 +8,49 @@ const Home = () => {
   const [people, setPeople] = useState([]);
   const [filteredPeople, setFilteredPeople] = useState([]);
   const [date, setDate] = useState('');
+  const [occupation, setOccupation] = useState('');
+  const [occupations, setOccupations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [checkingAvailability, setCheckingAvailability] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    getAllPeople()
-      .then((data) => {
-        setPeople(data);
-        setFilteredPeople(data);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    const fetchData = async () => {
+      try {
+        const [peopleData, occupationsData] = await Promise.all([
+          getAllPeople(),
+          getOccupations()
+        ]);
+        setPeople(peopleData);
+        setOccupations(occupationsData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  const handleDateChange = async (selectedDate) => {
-    setDate(selectedDate);
+  const handleSearch = async () => {
+    if (!date || !occupation) return;
+    
     setCheckingAvailability(true);
-    const available = [];
-    
-    for (const person of people) {
-      try {
-        const res = await getAvailableSlots(person.name, selectedDate);
-        if (Array.isArray(res.available_slots) && res.available_slots.length > 0) {
-          available.push(person);
-        }
-      } catch (err) {
-        console.error(`Error for ${person.name}:`, err);
-      }
+    try {
+      const res = await getAvailableSlots(date, occupation);
+      setFilteredPeople(res.available_people || []);
+    } catch (err) {
+      console.error('Error fetching available slots:', err);
+      setFilteredPeople([]);
+    } finally {
+      setCheckingAvailability(false);
     }
-    
-    setFilteredPeople(available);
-    setCheckingAvailability(false);
   };
 
   const handleCardClick = (personName) => {
-    if (!date) return alert('Please select a date first');
-    navigate(`/booking?name=${encodeURIComponent(personName)}&date=${date}`);
+    if (!date || !occupation) return alert('Please select both date and occupation first');
+    navigate(`/booking?name=${encodeURIComponent(personName)}&date=${date}&occupation=${occupation}`);
   };
 
   const containerVariants = {
@@ -80,14 +86,12 @@ const Home = () => {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            
             <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-white via-blue-100 to-indigo-200 bg-clip-text text-transparent">
               Book Your Appointment
             </h1>
-
           </motion.div>
 
-          {/* Date Selection */}
+          {/* Search Section */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -97,23 +101,75 @@ const Home = () => {
             <div className="relative">
               <div className="absolute bg-white/5 backdrop-blur-md inset-0 rounded-2xl blur opacity-20"></div>
               <div className="relative bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 shadow-2xl">
-                <div className="flex items-center gap-4 mb-4">
-                  <Calendar className="w-6 h-6 text-blue-400" />
-                  <h3 className="text-lg font-semibold text-white">Select Date</h3>
+                <div className="flex flex-col md:flex-row gap-4">
+                  {/* Date Selection */}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-4 mb-4">
+                      <Calendar className="w-6 h-6 text-blue-400" />
+                      <h3 className="text-lg font-semibold text-white">Select Date</h3>
+                    </div>
+                    <input
+                      type="date"
+                      className="w-full bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl px-4 py-3 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+
+                  {/* Occupation Selection */}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-4 mb-4">
+                      <User className="w-6 h-6 text-blue-400" />
+                      <h3 className="text-lg font-semibold text-white">Occupation</h3>
+                    </div>
+                    <select
+                      className="w-full bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl px-4 py-3 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+                      value={occupation}
+                      onChange={(e) => setOccupation(e.target.value)}
+                      disabled={loading}
+                    >
+                      <option value="">Select an occupation</option>
+                      {occupations.map((occ) => (
+                        <option key={occ} value={occ} className="bg-gray-800">
+                          {occ}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                <input
-                  type="date"
-                  className="w-full bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl px-4 py-3 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-                  value={date}
-                  onChange={(e) => handleDateChange(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                />
+
+                {/* Search Button */}
+                <button
+                  onClick={handleSearch}
+                  disabled={!date || !occupation || checkingAvailability || loading}
+                  className="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {checkingAvailability ? 'Searching...' : 'Search'}
+                </button>
               </div>
             </div>
           </motion.div>
 
+          {/* Loading State */}
+          {loading && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-20"
+            >
+              <div className="bg-white/5 backdrop-blur-md rounded-2xl p-8 border border-white/10 max-w-md mx-auto">
+                <div className="w-16 h-16 bg-gray-500/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
+                  <Clock className="w-8 h-8 text-blue-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">Loading...</h3>
+                <p className="text-gray-400">Please wait while we fetch the data.</p>
+              </div>
+            </motion.div>
+          )}
+
           {/* No Results State */}
-          {filteredPeople.length === 0 && date && (
+          { !loading && filteredPeople.length === 0 && date && occupation && (
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -124,13 +180,13 @@ const Home = () => {
                   <Calendar className="w-8 h-8 text-gray-400" />
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-2">Not Available</h3>
-                <p className="text-gray-400">No one is available for the selected date. Please try a different date.</p>
+                <p className="text-gray-400">No one is available for the selected date and occupation. Please try different options.</p>
               </div>
             </motion.div>
           )}
 
           {/* People Grid */}
-          {filteredPeople.length > 0 && (
+          {!loading && filteredPeople.length > 0 && (
             <motion.div
               variants={containerVariants}
               initial="hidden"
@@ -138,7 +194,7 @@ const Home = () => {
               className="flex justify-center"
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 max-w-screen-xl mx-auto justify-center">
-                {filteredPeople.map((person, index) => (
+                {filteredPeople.map((person) => (
                   <motion.div
                     key={person.id}
                     variants={cardVariants}
@@ -151,10 +207,8 @@ const Home = () => {
                     onClick={() => handleCardClick(person.name)}
                     className="group cursor-pointer relative"
                   >
-                                       
                     {/* Main card */}
                     <div className="relative bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:border-white/40 transition-all duration-300 shadow-2xl">
-
                       {/* Profile section */}
                       <div className="text-center mb-4">
                         <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg">
@@ -163,6 +217,9 @@ const Home = () => {
                         <h3 className="text-xl font-bold text-white mb-1 group-hover:text-blue-200 transition-colors">
                           {person.name}
                         </h3>
+                        <p className="text-sm text-gray-300">
+                          Available Slots: {person.available_slots.length}
+                        </p>
                       </div>
 
                       {/* Hover effect overlay */}
@@ -174,8 +231,8 @@ const Home = () => {
             </motion.div>
           )}
 
-          {/* Default state - shows all the people when no date is selected */}
-          {!date && (
+          {/* Default state - shows when no search is performed */}
+          {!loading && !date && !occupation && (
             <motion.div
               variants={containerVariants}
               initial="hidden"
@@ -184,8 +241,8 @@ const Home = () => {
             >
               <div className="bg-white/5 backdrop-blur-md rounded-2xl p-8 border border-white/10 max-w-lg mx-auto mb-8">
                 <Calendar className="w-12 h-12 text-blue-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-white mb-2">Select a Date</h3>
-                <p className="text-gray-300">Choose your preferred appointment date to see who are available.</p>
+                <h3 className="text-xl font-semibold text-white mb-2">Select Date and Occupation</h3>
+                <p className="text-gray-300">Choose your preferred appointment date and occupation to see available slots.</p>
               </div>
             </motion.div>
           )}
