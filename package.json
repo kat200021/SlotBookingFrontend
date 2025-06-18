@@ -1,25 +1,4 @@
 {
-<<<<<<< HEAD
-  "name": "slot-booking-backend",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "dependencies": {
-    "@supabase/supabase-js": "^2.50.0",
-    "cors": "^2.8.5",
-    "dotenv": "^16.5.0",
-    "express": "^5.1.0",
-    "multer": "^2.0.1",
-    "nodemailer": "^7.0.3",
-    "uuid": "^11.1.0"
-=======
   "name": "slot-booking-frontend",
   "private": true,
   "version": "0.0.0",
@@ -50,6 +29,5 @@
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
     "vite": "^6.3.5"
->>>>>>> 6ae8a0f (Initial frontend commit)
   }
 }
